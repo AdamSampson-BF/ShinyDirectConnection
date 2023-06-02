@@ -4,16 +4,34 @@ library(shinyWidgets)
 library(tidyverse)
 library(DBI)
 library(dbplyr)
+# library(promises)
+# library(future)
 
-# Test data
-# geo_lookup <- reactive({ geo_tbl %>% collect() })
+# plan(multisession) # Used for promises and future
+# Note: promises and future is used to allow really big queries to run asyncronously (don't wait for it before moving on)
+# Example:
+#     fact_long_tbl %>% 
+#       inner_join(myfilters) %>% 
+#       group_by(country,market) %>% 
+#       summarize(sum_value = sum(value,na.rm=TRUE)) %>% 
+#       collect() %>% 
+#       plot()
+# becomes
+#     future_promise({
+#       fact_long_tbl %>% inner_join(myfilters) %>% group_by(country,market) %>% 
+#       summarize(sum_value = sum(value,na.rm=TRUE)) %>% collect()
+#     }) %...>% plot()
+# because the database calculation and collection can take a long time. This allows the app to move
+# on to other tasks (such as parallel database queries!) without waiting. The cost to do paralels is 
+# high though so you should only do this if a page takes more than a couple seconds to load.
 
 ui <- dashboardPage(
   dashboardHeader(title = "ARM Dashboard"),
   dashboardSidebar(
     # geoFilterUI('geofilters')
     geoCountryFilterUI('geocountryfilter'),
-    geoMarketsFilterUI('geomarketfilter')
+    geoMarketsFilterUI('geomarketfilter'),
+    prodManufacturerFilterUI('prodmanufacturerfilter')
   ),
   dashboardBody()
 )
@@ -46,9 +64,14 @@ server <- function(input, output, session) {
   
   # geo_selections <- geoFilterServer('geofilters', geo_tbl = geo_tbl)
   
-  geo_lookup <- reactive({ geo_tbl %>% collect() })
+  geo_lookup <- reactive({ geo_tbl %>% collect() }) # This lookup is fairly quick to collect - borderline whether to run async
   geo_country_selection <- geoCountryFilterServer('geocountryfilter', geo_lookup = geo_lookup)
   geo_markets_selection <- geoMarketsFilterServer('geomarketfilter', geo_lookup = geo_lookup, countries_selected = geo_country_selection)
+  
+  # prod_lookup <- reactive({ prod_tbl %>% collect() }) # This lookup is slow collect - candidate for async or sql optimization
+  prod_lookup <- getProdLookupServer('productlookupid',prod_tbl = prod_tbl, countries_selected = geo_country_selection)
+  prod_manufacturer_selection <- prodManufacturerFilterServer('prodmanufacturerfilter', prod_lookup = prod_lookup, countries_selected = geo_country_selection)
+  # prod_manufacturer_selection <- prodManufacturerFilterServer('prodmanufacturerfilter', prod_lookup = prod_tbl, countries_selected = geo_country_selection)
 }
 
 shinyApp(ui, server)
