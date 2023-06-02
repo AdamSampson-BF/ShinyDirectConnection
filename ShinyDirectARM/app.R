@@ -11,7 +11,9 @@ library(dbplyr)
 ui <- dashboardPage(
   dashboardHeader(title = "ARM Dashboard"),
   dashboardSidebar(
-    geoFilterUI('geofilters')
+    # geoFilterUI('geofilters')
+    geoCountryFilterUI('geocountryfilter'),
+    geoMarketsFilterUI('geomarketfilter')
   ),
   dashboardBody()
 )
@@ -38,7 +40,11 @@ server <- function(input, output, session) {
                                 "acv_ly","numeric_acv_ly","display_acv_ly","feature_acv_ly","feature_display_acv_ly" ,
                                 "country","roll_period"  ))
   
-  geoFilterServer('geofilters', geo_tbl = geo_tbl)
+  # geo_selections <- geoFilterServer('geofilters', geo_tbl = geo_tbl)
+  
+  geo_lookup <- reactive({ geo_tbl %>% collect() })
+  geo_country_selection <- geoCountryFilterServer('geocountryfilter', geo_lookup = geo_lookup)
+  geo_markets_selection <- geoMarketsFilterServer('geomarketfilter', geo_lookup = geo_lookup, countries_selected = geo_country_selection)
 }
 
 shinyApp(ui, server)
