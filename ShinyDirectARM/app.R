@@ -47,13 +47,13 @@ server <- function(input, output, session) {
   # fact_long_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_values_long'))
   
   # Defining column names manually on connection makes the connection 4 times faster on current cloudera odbc connection 
-  date_tbl <- tbl(con, in_schema('aa_data_science_staging','dev_arm_desc_dates'), 
+  date_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_dates'), 
                   vars = c("cr_date","date"))
-  geo_tbl <- tbl(con, in_schema('aa_data_science_staging','dev_arm_desc_geo'),
+  geo_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_geo'),
                  vars = c("geo_id","market_type","market","division","state","lowest_level_spirits","aggregatable_spirts","national_flag","report_type","country"))
-  prod_tbl <- tbl(con, in_schema('aa_data_science_staging','dev_arm_desc_product'),
+  prod_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_product'),
                   vars = c("prod_id","price_segment","category","manufacturer","brand_family","brand","size","sku","country"))
-  fact_long_tbl <- tbl(con, in_schema('aa_data_science_staging','dev_arm_desc_values_long'),
+  fact_long_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_values_long'),
                        vars = c("geo_id","prod_id","cr_date","date_period","case_volume" ,           
                                 "volume","value","price_bin","promotion_value","promotion_volume"  ,     
                                 "non_promotion_value","non_promotion_volume","acv","numeric_acv","display_acv"    ,        
