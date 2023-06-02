@@ -21,10 +21,14 @@ ui <- dashboardPage(
 server <- function(input, output, session) {
   # NOTE: The database connections and queries should really be paralized with the async promises package
   cloudera_prod <- dbConnect(odbc::odbc(), "CLPImpala", timeout = 10)
+  
+  # Simple table connections automatically detect column names
   # date_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_dates'))
   # geo_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_geo'))
   # prod_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_product'))
   # fact_long_tbl <- tbl(cloudera_prod, in_schema('aa_data_science_staging','dev_arm_desc_values_long'))
+  
+  # Defining column names manually on connection makes the connection 4 times faster on current cloudera odbc connection 
   date_tbl <- tbl(con, in_schema('aa_data_science_staging','dev_arm_desc_dates'), 
                   vars = c("cr_date","date"))
   geo_tbl <- tbl(con, in_schema('aa_data_science_staging','dev_arm_desc_geo'),
